@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.4</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>com.twinspires</groupId>
+    <artifactId>spring-boot-k8s</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>spring-boot-k8s</name>
+    <description>Spring Boot 3 MVC application for Kubernetes deployment</description>
+    
+    <properties>
+        <java.version>21</java.version>
+    </properties>
+    
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <layers>
+                        <enabled>true</enabled>
+                    </layers>
+<!--                    <image>-->
+<!--                        <builder>paketobuildpacks/builder:base</builder>-->
+<!--                        <env>-->
+<!--                            <BP_JVM_VERSION>21</BP_JVM_VERSION>-->
+<!--                            <BP_JAVA_APP_SERVER>none</BP_JAVA_APP_SERVER>-->
+<!--                        </env>-->
+<!--                    </image>-->
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build-image</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>3.4.5</version>
+                <configuration>
+                    <from>
+                        <image>amazoncorretto:21-alpine</image>
+                    </from>
+                    <to>
+                        <image>${project.name}:${project.version}</image>
+                    </to>
+                    <container>
+                        <jvmFlags>
+                            <jvmFlag>-javaagent:/opt/datadog/dd-java-agent.jar</jvmFlag>
+                            <jvmFlag>-Ddd.service.name=spring-boot-k8s</jvmFlag>
+                            <jvmFlag>-Ddd.profiling.enabled=true</jvmFlag>
+                            <jvmFlag>-XX:+UseContainerSupport</jvmFlag>
+                            <jvmFlag>-XX:MaxRAMPercentage=75.0</jvmFlag>
+                        </jvmFlags>
+                        <ports>
+                            <port>8080</port>
+                        </ports>
+                        <environment>
+                            <DD_APM_ENABLED>true</DD_APM_ENABLED>
+                            <DD_LOGS_ENABLED>true</DD_LOGS_ENABLED>
+                            <DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL>true</DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL>
+                            <DD_JMXFETCH_ENABLED>true</DD_JMXFETCH_ENABLED>
+                            <DD_PROCESS_AGENT_ENABLED>true</DD_PROCESS_AGENT_ENABLED>
+                        </environment>
+                        <!-- No extraDirectories needed as Datadog agent is now included from a layer in Dockerfile -->
+                    </container>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
