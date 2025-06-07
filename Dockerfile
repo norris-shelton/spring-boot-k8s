@@ -1,4 +1,7 @@
-FROM maven:3.9-amazoncorretto-21 as builder
+# Use Amazon Linux 2023 as the base image
+FROM amazonlinux:2023
+
+FROM maven:3.9-amazoncorretto-24-alpine as builder
 WORKDIR /app
 COPY pom.xml .
 COPY src src
@@ -15,10 +18,6 @@ FROM datadog/agent:latest as datadog
 
 # Add Splunk Universal Forwarder layer
 FROM splunk/universalforwarder:latest as splunk-forwarder
-
-# Build the final image using layering
-FROM amazoncorretto:21-alpine
-WORKDIR /app
 
 # Copy layers from the builder stage in the correct order for optimal caching
 # Dependencies layer (changes less frequently)
